@@ -28,6 +28,7 @@ import numpy as np
 #   But there would be the four values used in the weights for A*. Then we get a simple path... but we aren't just using one transportation system so we can't just do things the simple way.
 #   Good news is that for the data-grabbing we don't actually care about multi-modal transportation systems yet. That's for later. 
 
+# TEST EDIT TO SEE IF GITHUB WORKS
 
 # First, grab the data from Nobile Rim 1.
 moon = st.ProcPlanet.DataStore()
