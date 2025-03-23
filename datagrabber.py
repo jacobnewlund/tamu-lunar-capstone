@@ -28,15 +28,21 @@ import numpy as np
 #   But there would be the four values used in the weights for A*. Then we get a simple path... but we aren't just using one transportation system so we can't just do things the simple way.
 #   Good news is that for the data-grabbing we don't actually care about multi-modal transportation systems yet. That's for later. 
 
-# TEST EDIT TO SEE IF GITHUB WORKS
-
 # First, grab the data from Nobile Rim 1.
 moon = st.ProcPlanet.DataStore()
 
+
+
+moon.AddGeoBinAltimetryLayer(3.0, ".../SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPolar875_10m", st.ProcPlanet.GeoBin_Extra_Args()) # Most important is the (kinda) high-res data over Nobile Rim 1.
+moon.AddGeoBinAltimetryLayer(2.0, ".../SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPole75_30m", st.ProcPlanet.GeoBin_Extra_Args()) # Second is the kind of okay res data over some parts we might miss with the above data.
+moon.AddGeoBinAltimetryLayer(1.0, ".../SharedData/PlanetData/Moon/Global/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014", st.ProcPlanet.GeoBin_Extra_Args()) # Last is the really crummy global data so worst-case scenario we still have *something*. 
+
+# uncomment the below lines if you couldn't stuff the STPRO files into your main drive
+"""
 moon.AddGeoBinAltimetryLayer(3.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPolar875_10m", st.ProcPlanet.GeoBin_Extra_Args()) # Most important is the (kinda) high-res data over Nobile Rim 1.
 moon.AddGeoBinAltimetryLayer(2.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPole75_30m", st.ProcPlanet.GeoBin_Extra_Args()) # Second is the kind of okay res data over some parts we might miss with the above data.
 moon.AddGeoBinAltimetryLayer(1.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Global/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014", st.ProcPlanet.GeoBin_Extra_Args()) # Last is the really crummy global data so worst-case scenario we still have *something*. 
-
+"""
 
 # As an aside: USEFUL LONG/LATITUDE STUFF:
 # Center of Nobile Rim 1: Lat -85.292466 Long 36.920242
