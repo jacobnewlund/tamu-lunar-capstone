@@ -67,12 +67,12 @@ for lat in latitudes:
                     h = np.linalg.norm(st.ProcPlanet.SampleGround(moon, loc, radius, 0.0, 16) - loc_sample) #height = start location elevation - sample location elevation
                     if h/d > tan6 and az != azimuths[-2]:
                         #if angle gets above 6 degrees (shaded) and the azimuth angle is less than the maximum azimuth angle (2*pi) continue to next azimuth angle
-                        illuminated == False
+                        illuminated = False
                         break
 
                     elif h/d > tan6 and az == azimuths[-2]:
                         #if angle gets above 6 degrees (shaded) and the azimuth angle is at its maximum value, consider the site a PSR
-                        illuminated == False
+                        illuminated = False
                         data["latitude"].append(lat)
                         data["longitude"].append(lon)
                         data["illumination"].append(0)                        
