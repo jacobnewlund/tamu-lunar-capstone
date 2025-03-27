@@ -23,8 +23,10 @@ d = 0 #[m]distance from start to sample point (sum of d_steps)
 d_max = 200 #[m]maximum distance for an individual step
 d_catch = 60000 #[m] "catch-all distance" where we stop iterating
 max_horizon_angle = [] #maximum angle from sample point to horizon (epsilon in alex's example)
+degrees_between_azimuths = 1 #[degrees] rotation angle between each azimuth
+rotations = 360/degrees_between_azimuths #number of steps the azimuth angle rotates through
 
-azimuths = np.linspace(0,2*np.pi,36)
+azimuths = np.linspace(0,2*np.pi,rotations)
 
 lat_steps = 100
 lon_steps = 100
@@ -63,19 +65,25 @@ for lat in latitudes:
                     d += d_step(d,d_max)
                     loc_sample = loc + f_hat*d #stepping
                     h = np.linalg.norm(st.ProcPlanet.SampleGround(moon, loc, radius, 0.0, 16) - loc_sample) #height = start location elevation - sample location elevation
-                    if h/d < tan6:
-                        #if angle gets below 6 degrees consider site illuminated 
-                        illuminated == True
+                    if h/d > tan6 and az != azimuths[-2]:
+                        #if angle gets above 6 degrees (shaded) and the azimuth angle is less than the maximum azimuth angle (2*pi) continue to next azimuth angle
+                        illuminated == False
+                        break
+
+                    if h/d > tan6 and az == azimuths[-2]:
+                        #if angle gets above 6 degrees (shaded) and the azimuth angle is at its maximum value, consider the site a PSR
+                        illuminated == False
+                        data["latitude"].append(lat)
+                        data["longitude"].append(lon)
+                        data["illumination"].append(0)                        
+                        break  
+
+                    elif d >= d_catch:
+                        #if catch distance is reached without triggering the previous if statement, site is illuminated from current azimuth angle, and considered illuminated
+                        illuminated = True
                         data["latitude"].append(lat)
                         data["longitude"].append(lon)
                         data["illumination"].append(1)
-                        break
-                    elif d >= d_catch:
-                        #if catch distance is reached without triggering the previous if statement, site is not illuminated from current azimuth angle
-                        illuminated = False
-                        data["latitude"].append(lat)
-                        data["longitude"].append(lon)
-                        data["illumination"].append(0)
                         break
 
 df = pd.DataFrame(data)
