@@ -70,7 +70,7 @@ for lat in latitudes:
                         illuminated == False
                         break
 
-                    if h/d > tan6 and az == azimuths[-2]:
+                    elif h/d > tan6 and az == azimuths[-2]:
                         #if angle gets above 6 degrees (shaded) and the azimuth angle is at its maximum value, consider the site a PSR
                         illuminated == False
                         data["latitude"].append(lat)
