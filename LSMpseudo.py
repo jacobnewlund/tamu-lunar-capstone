@@ -201,11 +201,17 @@ with open('terrain_data.csv', mode='r') as file:
     for row in reader:
         #print(row)
         #initialize variables
-        lat = float(row[1])
-        long = float(row[2])
-        ill = float(row[3])
-        grade = float(row[4])
-        elev = float(row[5])
+        # lat = float(row[1])
+        # long = float(row[2])
+        # ill = float(row[3])
+        # grade = float(row[4])
+        # elev = float(row[5])
+        
+        lat = float(row[0])
+        long = float(row[1])
+        ill = float(row[2])
+        grade = float(row[3])
+        elev = float(row[4])
         sci = 0
 
         #Danger Equation Implemented
@@ -241,14 +247,57 @@ print("done reading !!!")
 prob = Problem(State(initX,initY), goal_test, grid, transition_with_danger)
 
 
+def LLA_to_PCPF(lat, lon, alt, radius):
+    r = radius + alt
+    x = r * np.cos(lat) * np.cos(lon)
+    y = r * np.cos(lat) * np.sin(lon)
+    z = r * np.sin(lat)
+    return np.array([x, y, z])
+
+
+lat_minus = np.deg2rad(-85.5)
+lat_plus = np.deg2rad(-84.0)
+lon_minus = np.deg2rad(28.0)
+lon_plus = np.deg2rad(38.0)
+
+
+def Indices_to_Stereo(i_, j_, n):
+    lat = lat_minus + i_ * (lat_plus - lat_minus) / n
+    lon = lon_minus + j_ * (lon_plus - lon_minus) / n
+    xyz = LLA_to_PCPF(lat, lon, 0.0, 1737400.0)
+    return [xyz[0] / (1 - xyz[2]), xyz[1] / (1 - xyz[2])]
+
 
 ### VISULAIZATION ###
-def visualize_problem(problem):
+def visualize_problem(problem: Problem):
     grid = problem.grid
     n = len(grid) 
     # We create a color map for the grid based on danger values
     color_grid = np.zeros((n, n, 3))  # RGB color grid
+    # color_grid_stereo = np.zeros((n, n, 3))
 
+    x = np.linspace(0, n, n)
+    y = np.linspace(0, n, n)
+
+    # x := longitude, y := latitude
+    X, Y = np.meshgrid(x, y)
+
+    x_stereo = np.zeros((n, n))
+    y_stereo = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            # lat = lat_minus + i * (lat_plus - lat_minus) / n
+            # lon = lon_minus + j * (lon_plus - lon_minus) / n
+            # xyz = LLA_to_PCPF(lat, lon, 0.0, 1737400.0)
+            xy_stereo = Indices_to_Stereo(i, j, n)
+            # print(xyz)
+            x_stereo[i, j] = xy_stereo[0]
+            y_stereo[i, j] = xy_stereo[1]
+
+    # transform to south pole stereographic xy coordinates
+
+    Z = np.zeros((n, n))
+    
     for i in range(n):
         for j in range(n):
             cell = grid[i][j]
@@ -261,19 +310,31 @@ def visualize_problem(problem):
                 color_grid[i, j] = [1, safety, safety]  # Red fades to white as safety increases
                 # PSR = cell.illumination
                 # color_grid[i,j] = [1, PSR, PSR]
+                Z[i, j] = safety
 
     init_state = problem.initial_state
     color_grid[init_state.x,init_state.y] = [0,0,1]
 
     # Plot the grid
-    plt.imshow(color_grid, extent=[0, n, 0, n], origin='lower')
+    # plt.imshow(color_grid, extent=[0, n, 0, n], origin='lower')
+    # plt.pcolormesh(X, Y, Z, cmap='RdBu')
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.pcolormesh(y_stereo, x_stereo, Z, cmap='RdBu')
+    ax.set_aspect('equal', 'box')
 
-    plt.plot(initY + 0.5, initX + 0.5, 'b*', markersize=12, markeredgecolor='black')
-    plt.text(initY + 5, initX + 5, "Start Point", verticalalignment='center')
-    plt.plot(goalY + 0.5, goalX + 0.5, 'g*', markersize=12, markeredgecolor='black', label='End Point')
-    plt.text(goalY + 5, goalX + 5, "End Point", verticalalignment='center')
-    plt.grid(True)
-    plt.title("Problem Visualization")
+    xy_init = Indices_to_Stereo(initX + 0.5, initY + 0.5, n)
+    xy_goal = Indices_to_Stereo(goalX + 0.5, goalY + 0.5, n)
+
+    # plt.plot(initY + 0.5, initX + 0.5, 'b*', markersize=12, markeredgecolor='black')
+    plt.plot(xy_init[1], xy_init[0], 'y*', markersize=24, markeredgecolor='black', label='Start Point')
+    # plt.text(xy_init[1], xy_init[0], "   Start Point", verticalalignment='center')
+    # plt.plot(goalY + 0.5, goalX + 0.5, 'g*', markersize=12, markeredgecolor='black', label='End Point')
+    plt.plot(xy_goal[1], xy_goal[0], 'g*', markersize=24, markeredgecolor='black', label='End Point')
+    # plt.text(xy_goal[1], xy_goal[0], "   End Point", verticalalignment='center')
+    ax.grid(True)
+    ax.legend()
+    ax.set_title("Problem Visualization")
     plt.show()
 
     print('pass')
@@ -283,15 +344,15 @@ visualize_problem(prob)
 
 
 # GENERATE SOLUTION WITH A STAR
-ast = AStarSearch(prob, available_actions)
-solution = ast.search()
-if solution:
-    print("Solution found:")
-    for state in solution.path():
-        print(state.__str__())
-    print("solution cost=", solution.path_cost) #prints coordinate of solution
-else:
-    print("No solution found.")
+# ast = AStarSearch(prob, available_actions)
+# solution = ast.search()
+# if solution:
+#     print("Solution found:")
+#     for state in solution.path():
+#         print(state.__str__())
+#     print("solution cost=", solution.path_cost) #prints coordinate of solution
+# else:
+#     print("No solution found.")
 
 #backtrace / check for rough elevation changes
 
