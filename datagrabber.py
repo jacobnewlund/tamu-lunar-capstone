@@ -32,19 +32,16 @@ import numpy as np
 moon = st.ProcPlanet.DataStore()
 radius = 1737400.0 # Radius of moon in meters (required for absolutely everything DO NOT CHANGE)
 
-moon.AddGeoBinAltimetryLayer(3.0, "../SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPolar875_10m", st.ProcPlanet.GeoBin_Extra_Args()) # Most important is the (kinda) high-res data over Nobile Rim 1.
-moon.AddGeoBinAltimetryLayer(2.0, "../SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPole75_30m", st.ProcPlanet.GeoBin_Extra_Args()) # Second is the kind of okay res data over some parts we might miss with the above data.
-moon.AddGeoBinAltimetryLayer(1.0, "../SharedData/PlanetData/Moon/Global/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014", st.ProcPlanet.GeoBin_Extra_Args()) # Last is the really crummy global data so worst-case scenario we still have *something*. 
+# moon.AddGeoBinAltimetryLayer(3.0, "../SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPolar875_10m", st.ProcPlanet.GeoBin_Extra_Args()) # Most important is the (kinda) high-res data over Nobile Rim 1.
+# moon.AddGeoBinAltimetryLayer(2.0, "../SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPole75_30m", st.ProcPlanet.GeoBin_Extra_Args()) # Second is the kind of okay res data over some parts we might miss with the above data.
+# moon.AddGeoBinAltimetryLayer(1.0, "../SharedData/PlanetData/Moon/Global/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014", st.ProcPlanet.GeoBin_Extra_Args()) # Last is the really crummy global data so worst-case scenario we still have *something*. 
 
 # uncomment the below lines if you couldn't stuff the STPRO files into your main drive
-# moon.AddGeoBinAltimetryLayer(3.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPolar875_10m", st.ProcPlanet.GeoBin_Extra_Args())
-# moon.AddGeoBinAltimetryLayer(2.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPole75_30m", st.ProcPlanet.GeoBin_Extra_Args())
-# moon.AddGeoBinAltimetryLayer(1.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Global/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014", st.ProcPlanet.GeoBin_Extra_Args()) 
+moon.AddGeoBinAltimetryLayer(3.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPolar875_10m", st.ProcPlanet.GeoBin_Extra_Args())
+moon.AddGeoBinAltimetryLayer(2.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Local/SouthPole/LRO_LOLA_DEM_SPole75_30m", st.ProcPlanet.GeoBin_Extra_Args())
+moon.AddGeoBinAltimetryLayer(1.0, "B:/SpaceTeamsPro_0.30.0/SharedData/PlanetData/Moon/Global/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014", st.ProcPlanet.GeoBin_Extra_Args()) 
 
-# As an aside: USEFUL LONG/LATITUDE STUFF:
-# Center of Nobile Rim 1: Lat -85.292466 Long 36.920242
-# dot of desired location -85.292466, 36.920242
-# im 2 landing site -84.7906, 29.1957
+
 # ground [0] = position at surface in cartesian planet-centered planet-fixed (PCPF) frame
 # ground [1] = normal vector (also in same frame)
 
@@ -53,24 +50,31 @@ boundSize = 3
 # latLongStart = (np.deg2rad(-85.292466-0.5), np.deg2rad(36.920242-boundSize*3)) # First term is latitude, then longitude. Note that it should be in radians.
 # latLongEnd = (np.deg2rad(-85.292466+0.5), np.deg2rad(36.920242+boundSize*3)) # Same as above
 # or use the LROC nobile rim 1 bounds
-latLongStart = (np.deg2rad(-85.5), np.deg2rad(38)) # First term is latitude, then longitude. Note that it should be in radians.
-latLongEnd = (np.deg2rad(-84), np.deg2rad(28)) # Same as above
+latLongStart = (np.deg2rad(-84), np.deg2rad(28)) # First term is latitude, then longitude. Note that it should be in radians.
+latLongEnd = (np.deg2rad(-85.5), np.deg2rad(38)) # Same as above
 
+#===================================================#
+# Handy lats/longs:
+# LROC Quickmap Nobile Rim 1 Bounding Box
 # -85.35140, 31.64367
 # -85.89749, 36.47997
 # -85.47479, 43.20664
 # -84.97460, 38.05472
 
-# Testing "squareness" of bounds for the fun of it:
-latDist = np.linalg.norm(st.PlanetUtils.LLA_to_PCPF(st.PlanetUtils.LatLonAlt(latLongStart[0], latLongEnd[0], 2000.0), radius))
-longDist = np.linalg.norm(st.PlanetUtils.LLA_to_PCPF(st.PlanetUtils.LatLonAlt(latLongStart[1], latLongEnd[1], 2000.0), radius))
-if latDist/longDist == 1.0:
-    print("Latitude/longitude bounds square")
-else:
-    print("Latitude/longitude bounds not square, {}".format(latDist/longDist))
+# IM-2 Landing Site (END POINT)
+# -84.79060, 29.19570
 
-inbetweenLatPoints = 200 # change these to increase fineness of data
-inbetweenLongPoints = 200
+# -85.29247, 38.92024
+
+# As an aside: USEFUL LONG/LATITUDE STUFF:
+# Center of Nobile Rim 1: Lat -85.292466 Long 36.920242
+# dot of desired location -85.292466, 36.920242
+# im 2 landing site -84.7906, 29.1957
+# nice flat starting point -85.29247, 36.92024
+#===================================================#
+
+inbetweenLatPoints = 250 # change these to increase fineness of data
+inbetweenLongPoints = 250
 
 
 # Now, we need to actually run over these bounds. I'll give you one guess how we do that. (it's a for loop!!!)
@@ -94,53 +98,35 @@ for latitude in np.linspace(latLongEnd[0], latLongStart[0], inbetweenLatPoints):
 
 print("Matrix created") # We did it!!!
 
+# Now we re-crunch it to feed into our A* code. All we need is elevation and grade.
+import pandas as pd # need dat for the csv
 
-# Now, I'm just going to try to make a nice graphical representation of the data. Matplotlib should do it.
-#   As a test, I'm going to try to make a heightmap using a funky wireframe plot I found online. It may look readable. I hope.
-import matplotlib.pyplot as plt
-import numpy as np
-
-from matplotlib import cbook, cm
-from matplotlib.colors import LightSource
-
-# Load and format data
-X = np.array([])
-Y = np.array([])
-Z = np.array([])
+data = {
+    "latitude" : [],
+    "longitude" : [],
+    "elevation" : [],
+    "grade" : []
+}
 
 indexLat = 0
 indexLong = 0
 
-# recall - moon radius is 1737400 m
-# (array([  139784.47206655, -1398598.92428207,  1018217.8083578 ]), array([ 0.06167599, -0.81263999,  0.57949315]))
-
-# Load in data using the matrix and the same for loops (for that latitude/longitude data to make it scale properly)
 for latitude in np.linspace(latLongEnd[0], latLongStart[0], inbetweenLatPoints): # for every latitude in our bounds...
     for longitude in np.linspace(latLongStart[1], latLongEnd[1], inbetweenLongPoints): # for every longitude in our bounds...
-        cell = dataMatrix[indexLat][indexLong] 
-        altitude = np.sqrt(cell[0]**2 + cell[1]**2 + cell[2]**2) - radius
-        
-        X = np.append(X, cell[-2])
-        Y = np.append(Y, cell[-1])
-        Z = np.append(Z, altitude)
+        # latitude longitude illumination grade elevation
+        cell = dataMatrix[indexLat][indexLong]
+        posVector = [cell[0], cell[1], cell[2]]
+        altitude = np.linalg.norm(posVector)
+        normVector = [cell[3], cell[4], cell[5]]
+        data["latitude"].append(np.rad2deg(latitude) )
+        data["longitude"].append(np.rad2deg(longitude) )
+        data["elevation"].append(np.linalg.norm(posVector) - radius)   
+        data["grade"].append(np.rad2deg(np.acos(np.dot(posVector/altitude, normVector))))
         indexLong += 1
     indexLong = 0
     indexLat += 1
 
-X.resize(inbetweenLatPoints, inbetweenLongPoints)
-Y.resize(inbetweenLatPoints, inbetweenLongPoints)
-Z.resize(inbetweenLatPoints, inbetweenLongPoints)
+df = pd.DataFrame(data)
+df.to_csv("datagrabbed.csv")
 
-
-fig, ax = plt.subplots(subplot_kw=dict(projection='3d'))
-ax.plot_surface(X, Y, Z, cmap=cm.managua)
-ax.set_xlabel("latitude (deg)")
-ax.set_ylabel("longitude (deg)")
-
-
-plt.show()
-
-# spicey py (pip-install spiceypy) for the fancy sun vector stuff psuedo-ray tracing
-# Moon frame: "MOON_PA"
-
-plt.close() 
+print("Finished .csv generation")
