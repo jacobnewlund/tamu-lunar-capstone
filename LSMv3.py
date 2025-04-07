@@ -109,7 +109,7 @@ def available_actions(state, grid):
 # Transition model
 def transition(state, action, grid):
     #BOUNDING BOX:
-    maxInd = len(grid)
+    maxInd = len(grid) - 1
     cost = 1
     
     new_x = state.x + action[0]
