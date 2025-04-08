@@ -204,7 +204,6 @@ with open('terrain_data.csv', mode='r') as file:
         else:
             traversable = True
         
-        
 
         #Transportation modes available (ADJUST NUMBER !!!)
         if grade > 10:
@@ -242,6 +241,8 @@ lon_minus = np.deg2rad(28.0)
 lon_plus = np.deg2rad(38.0)
 
 
+
+#VISUALIZATION
 def Indices_to_Stereo(i_, j_, n):
     lat = lat_minus + i_ * (lat_plus - lat_minus) / n
     lon = lon_minus + j_ * (lon_plus - lon_minus) / n
@@ -342,7 +343,6 @@ visualize_problem(prob)
 
 
 
-
 ast = AStarSearch(prob, available_actions)
 print('Running A-star search algorithm')
 start_time = time.time()
@@ -370,3 +370,41 @@ print('runtime', running)
 
 df = pd.DataFrame(path)
 df.to_csv('A_star_Path.csv',index=False) 
+
+def operations(path):
+    grid_size = 100 #[m]
+    tot_cost = 0
+    tot_power = 0
+    tot_mass = 0
+
+    #variables
+    rail_mass = 0
+    monoMass = 33 #kg/m of rail
+    tramMass = 2.75 #kg/m rail
+    railCost = 3.50 # $/m
+    #assuming 6m towers
+    towerCount = 1 #initialize with 1
+    towerMass = 1050
+    towerCost = 3 # $/m
+ 
+    for row in df:
+        mode = row[2]
+
+        if mode == 0: #Monorail
+            rail_mass += (grid_size*monoMass)
+            towerCount += 3
+        elif mode == 1: #Tramway
+            rail_mass.append(grid_size*tramMass)
+            towerCount += 1
+
+    #material cost
+    mat_cost = rail_mass*railCost + towerCount*towerMass*towerCost
+
+    #Power
+
+    #Deployment
+    capacity = 17*907.185 #kg/launch
+    launches = towerCount*towerMass/capacity
+
+    
+    return mat_cost, launches
