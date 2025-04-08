@@ -404,7 +404,6 @@ def operations(path):
 
     #Deployment
     capacity = 17*907.185 #kg/launch
-    launches = towerCount*towerMass/capacity
-
+    launches = np.ceil(towerCount*towerMass/capacity + rail_mass/capacity)
     
     return mat_cost, launches
