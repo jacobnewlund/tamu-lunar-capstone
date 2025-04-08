@@ -110,8 +110,8 @@ def available_actions(state, grid):
 def transition(state, action, grid):
     #BOUNDING BOX:
     maxInd = len(grid) - 1
-    grade = grid[state.x][state.y].grade
-    cost = -np.log(1 - grade/20) 
+    #grade = grid[state.x][state.y].grade
+    cost = grid.cost 
     
     new_x = state.x + action[0]
     new_y = state.y + action[1]
