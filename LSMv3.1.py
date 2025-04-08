@@ -18,7 +18,8 @@ class GridCell():
         self.elevation = elevation
         self.traversable = traversable
         self.goal = goal 
-        self.mode = mode #keeps track of transportation that can be implemented
+        self.mode = mode 
+        self.cost = -np.log(1-grade/20) #keeps track of transportation that can be implemented
 
     ''' attribute explanation:
         grade           -> [float]
@@ -30,7 +31,7 @@ class GridCell():
     
 
     def __str__(self):
-        return f"lat: {self.lat}, long: {self.long}, Illumination {self.illumination}, Grade: {self.grade}, Elevation {self.elevation}, Traversable: {self.traversable}, Mode: {self.mode}, Goal: {self.goal}"
+        return f"lat: {self.lat}, long: {self.long}, Illumination {self.illumination}, Grade: {self.grade}, Elevation {self.elevation}, Traversable: {self.traversable}, Mode: {self.mode}, Goal: {self.goal}, Cost: {self.cost}"
     
 class State:
     # Just two attributes that represent position on grid (x, y for indexing purposes)
