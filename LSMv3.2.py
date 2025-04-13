@@ -10,7 +10,7 @@ import pandas as pd
 
 
 class GridCell():
-    def __init__(self, lat, long, grade, elevation, illumination, traversable, mode, goal):
+    def __init__(self, lat, long, grade, elevation, illumination, traversable, mode, goal, cost):
         self.lat = lat
         self.long = long
         self.illumination = illumination
@@ -19,7 +19,7 @@ class GridCell():
         self.traversable = traversable
         self.goal = goal 
         self.mode = mode 
-        self.cost = np.exp(grade/20) #keeps track of transportation that can be implemented
+        self.cost = cost #keeps track of transportation that can be implemented
 
     ''' attribute explanation:
         grade           -> [float]
@@ -200,6 +200,7 @@ with open('Terrain_data_25.csv', mode='r') as file:
         elev = float(row[4])
         goal = False
         mode = 0
+        cost = 0
 
         #Store initial state
         if round(lat,2) == round(pointA[0],2) and round(long,2) == round(pointA[1],2):
@@ -216,6 +217,7 @@ with open('Terrain_data_25.csv', mode='r') as file:
         
         else:
             traversable = True
+            cost = np.exp(grade/20)
         
 
         #Transportation modes available (ADJUST NUMBER !!!)
@@ -225,7 +227,7 @@ with open('Terrain_data_25.csv', mode='r') as file:
 
         #INITIALIZE GRIDCELL
         
-        grid[i,j] = GridCell(lat=lat, long=long, illumination=ill, grade=grade, elevation=elev, traversable=traversable, goal = goal, mode=mode)
+        grid[i,j] = GridCell(lat=lat, long=long, illumination=ill, grade=grade, elevation=elev, traversable=traversable, goal = goal, mode=mode, cost=cost)
         #print(grid[i,j])
 
         #index
@@ -304,7 +306,7 @@ def visualize_problem(problem: Problem):
             elif cell.traversable == False:
                 color_grid_non[i,j] = [1,0,0]
             else:
-                safety = 1 - cell.cost/np.e # Now, danger=1 means safe, danger=0 means dangerous
+                safety = 1 - np.exp(cell.grade/20)/np.e # Now, danger=1 means safe, danger=0 means dangerous
                 color_grid_trev[i, j] = [1, safety, safety]  # Red fades to white as safety increases
                 # PSR = cell.illumination
                 # color_grid[i,j] = [1, PSR, PSR]
