@@ -13,4 +13,3 @@ bounds = [(np.deg2rad(-84), np.deg2rad(28)), (np.deg2rad(-85.5), np.deg2rad(38))
 
 import datagrabber as dg
 
-

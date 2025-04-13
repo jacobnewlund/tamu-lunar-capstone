@@ -37,10 +37,11 @@ def data_stitcher(file1,file2,output = 'terrain_data.csv'):
     
     #convert output dictionary to pandas data-frame, and output csv
     df = pd.DataFrame(data)
-    df.to_csv(output)
+    df.to_csv(output, index=False)
 
 
 
 
-combo_dict = data_stitcher('illumination 500x500.csv','datagrabbed.csv')
+combo_dict = data_stitcher('illumination.csv','datagrabbed.csv')
 
+print("we're done... yippee!!!")

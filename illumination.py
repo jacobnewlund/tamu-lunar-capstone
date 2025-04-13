@@ -33,8 +33,8 @@ rotations = 360/degrees_between_azimuths #number of steps the azimuth angle rota
 
 azimuths = np.linspace(0,2*np.pi,int(rotations))
 
-lat_steps = 250
-lon_steps = 250
+lat_steps = 1820
+lon_steps = 1108
 latitudes = np.linspace(np.deg2rad(-85.5),np.deg2rad(-84),lat_steps)
 longitudes = np.linspace(np.deg2rad(28),np.deg2rad(38),lon_steps)
 
@@ -52,10 +52,10 @@ data = {
 steps = 0
 for lat in latitudes:
     tan = np.tan(np.deg2rad(1.5 + (90 + np.rad2deg(lat))))
-
+    print(round(steps/(lat_steps*lon_steps)*100,2), "%")
     for lon in longitudes:
-        if int(steps/(lat_steps*lon_steps)*100) % 5 == 0:
-            print(round(steps/(lat_steps*lon_steps)*100,2), "%")
+        # if int(steps/(lat_steps*lon_steps)*100) % 5 == 0:
+        #     print(round(steps/(lat_steps*lon_steps)*100,2), "%")
         #loop over each latitude longitude
         illuminated = False
         for az in azimuths:
