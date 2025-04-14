@@ -210,16 +210,16 @@ with open('megathingy.csv', mode='r') as file:
 
         #Store initial state
         if round(lat,2) == round(pointA[0],2) and round(long,2) == round(pointA[1],2):
-            if havDist(np.deg2rad(pointA[0]), np.deg2rad(lat), np.deg2rad(pointA[1]), long, radius) < minHavStart:
-                minHavStart = havDist(pointA[0], lat, pointA[1], long, radius)
+            if havDist(np.deg2rad(pointA[0]), np.deg2rad(lat), np.deg2rad(pointA[1]), np.deg2rad(long), radius) < minHavStart:
+                minHavStart = havDist(np.deg2rad(pointA[0]), np.deg2rad(lat), np.deg2rad(pointA[1]), np.deg2rad(long), radius)
                 initX = i
                 initY = j
                 #print(lat,long, "dist", havDist(pointA[0], lat, pointA[1], long, radius)) 
 
         #set goal state using science
         if round(lat,2) == round(pointB[0],2) and round(long,2) == round(pointB[1],2):
-            if havDist(pointB[0], lat, pointB[1], long, radius) < minHavEnd:
-                minHavEnd = havDist(pointB[0], lat, pointB[1], long, radius)
+            if havDist(np.deg2rad(pointB[0]), np.deg2rad(lat), np.deg2rad(pointB[1]), np.deg2rad(long), radius) < minHavEnd:
+                minHavEnd = havDist(np.deg2rad(pointB[0]), np.deg2rad(lat), np.deg2rad(pointB[1]), np.deg2rad(long), radius)
                 goalX = i
                 goalY = j
                 # print(lat,long, "dist", havDist(pointB[0], lat, pointB[1], long, radius)) 
