@@ -33,8 +33,8 @@ rotations = 360/degrees_between_azimuths #number of steps the azimuth angle rota
 
 azimuths = np.linspace(0,2*np.pi,int(rotations))
 
-lat_steps = 1820
-lon_steps = 1108
+lat_steps = 455
+lon_steps = 277
 latitudes = np.linspace(np.deg2rad(-85.5),np.deg2rad(-84),lat_steps)
 longitudes = np.linspace(np.deg2rad(28),np.deg2rad(38),lon_steps)
 

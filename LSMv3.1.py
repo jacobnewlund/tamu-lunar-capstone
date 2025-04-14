@@ -10,7 +10,7 @@ import pandas as pd
 
 
 class GridCell():
-    def __init__(self, lat, long, grade, elevation, illumination, traversable, mode, goal):
+    def __init__(self, lat, long, grade, elevation, illumination, traversable, mode, goal, cost):
         self.lat = lat
         self.long = long
         self.illumination = illumination
@@ -19,7 +19,7 @@ class GridCell():
         self.traversable = traversable
         self.goal = goal 
         self.mode = mode 
-        self.cost = -np.log(1-grade/20) #keeps track of transportation that can be implemented
+        self.cost = cost #keeps track of transportation that can be implemented
 
     ''' attribute explanation:
         grade           -> [float]
@@ -90,7 +90,8 @@ Action ={"UP":(-step, 0),"DOWN":(step, 0),"LEFT":(0, -step),"RIGHT":(0, step)} #
 def available_actions(state, grid):
     actions = []
     x, y = state.x, state.y
-    maxInd = len(grid)
+    maxInd_X = np.shape(grid)[0]
+    maxInd_Y = np.shape(grid)[1]
 
     ### ADJUSTABLE VARIABLES ##
     step = 1
@@ -98,25 +99,26 @@ def available_actions(state, grid):
     #path can only move within bounds and cells that have "reasonable danger"
     if x > 0 and grid[x-step][y].traversable:
         actions.append(Action["UP"])
-    if x < maxInd and grid[x+step][y].traversable:
+    if x < maxInd_X and grid[x+step][y].traversable:
         actions.append(Action['DOWN'])
     if y > 0 and grid[x][y-step].traversable:
         actions.append(Action["LEFT"])
-    if y < maxInd and grid[x][y+step].traversable:
+    if y < maxInd_Y and grid[x][y+step].traversable:
         actions.append(Action["RIGHT"])
     
     return actions 
 
 def transition(state, action, grid):
     #BOUNDING BOX:
-    maxInd = len(grid) - 1
+    maxInd_X = np.shape(grid)[0] - 1
+    maxInd_Y = np.shape(grid)[1] - 1
     #grade = grid[state.x][state.y].grade
     cost = grid.cost 
     
     new_x = state.x + action[0]
     new_y = state.y + action[1]
 
-    if 0 <= new_x < maxInd and 0 <= new_y < maxInd:
+    if 0 <= new_x < maxInd_X and 0 <= new_y < maxInd_Y:
         return State(new_x, new_y), cost
     return state, cost  
 
@@ -165,8 +167,9 @@ pointB = [-84.7906, 29.1957]     #end point
 minLat, maxLat, minLong, maxLong = -85.5, -84, 28, 38
 
 #IMPORT BOUND BOX DATA AND GENERATE GRID
-yippee = 500
-grid = np.empty((yippee,yippee), dtype=object)
+Lat_points = 455
+Lon_points = 276
+grid = np.empty((Lat_points,Lon_points), dtype=object)
 # Read CSV file
 with open('terrain_data.csv', mode='r') as file:
     reader = csv.reader(file, delimiter=',')
@@ -186,6 +189,7 @@ with open('terrain_data.csv', mode='r') as file:
         grade = float(row[3])
         elev = float(row[4])
         goal = False
+        cost = 0
         mode = 0
 
         #Store initial state
@@ -203,6 +207,7 @@ with open('terrain_data.csv', mode='r') as file:
         
         else:
             traversable = True
+            cost = np.exp(grade/20)
         
 
         #Transportation modes available (ADJUST NUMBER !!!)
@@ -211,16 +216,17 @@ with open('terrain_data.csv', mode='r') as file:
 
 
         #INITIALIZE GRIDCELL
-        grid[i,j] = GridCell(lat=lat, long=long, illumination=ill, grade=grade, elevation=elev, traversable=traversable, goal = goal, mode=mode)
+        grid[i,j] = GridCell(lat=lat, long=long, illumination=ill, grade=grade, elevation=elev, traversable=traversable, goal = goal, mode=mode,cost=cost)
         #print(grid[i,j])
 
         #index
         j += 1
-        if j == yippee:
+        if j == Lat_points:
+            print('reached end of row')
             j = 0
             i += 1
 
-            if i == 250:
+            if i == Lon_points/2:
                 print('progress !!')
 
 print("done reading !!!")
@@ -243,44 +249,45 @@ lon_plus = np.deg2rad(38.0)
 
 
 #VISUALIZATION
-def Indices_to_Stereo(i_, j_, n):
-    lat = lat_minus + i_ * (lat_plus - lat_minus) / n
-    lon = lon_minus + j_ * (lon_plus - lon_minus) / n
+def Indices_to_Stereo(i_, j_, n_x, n_y):
+    lat = lat_minus + i_ * (lat_plus - lat_minus) / n_x
+    lon = lon_minus + j_ * (lon_plus - lon_minus) / n_y
     xyz = LLA_to_PCPF(lat, lon, 0.0, 1737400.0)
     return [xyz[0] / (1 - xyz[2]), xyz[1] / (1 - xyz[2])]
 
 def visualize_problem(problem: Problem):
     grid = problem.grid
-    n = len(grid) 
+    n_x = np.shape(grid)[0]
+    n_y = np.shape(grid)[1] 
     # We create a color map for the grid based on danger values
-    color_grid_trev = np.zeros((n, n, 3))
-    color_grid_non = np.zeros((n, n, 3))  # RGB color grid
+    color_grid_trev = np.zeros((n_x, n-y, 3))
+    color_grid_non = np.zeros((n_x, n_y, 3))  # RGB color grid
     # color_grid_stereo = np.zeros((n, n, 3))
 
-    x = np.linspace(0, n, n)
-    y = np.linspace(0, n, n)
+    x = np.linspace(0, n_x, n_y)
+    y = np.linspace(0, n_x, n_y)
 
     # x := longitude, y := latitude
     X, Y = np.meshgrid(x, y)
 
-    x_stereo = np.zeros((n, n))
-    y_stereo = np.zeros((n, n))
-    for i in range(n):
-        for j in range(n):
+    x_stereo = np.zeros((n_x, n_y))
+    y_stereo = np.zeros((n_x, n_y))
+    for i in range(n_x):
+        for j in range(n_y):
             # lat = lat_minus + i * (lat_plus - lat_minus) / n
             # lon = lon_minus + j * (lon_plus - lon_minus) / n
             # xyz = LLA_to_PCPF(lat, lon, 0.0, 1737400.0)
-            xy_stereo = Indices_to_Stereo(i, j, n)
+            xy_stereo = Indices_to_Stereo(i, j, n_x, n_y)
             # print(xyz)
             x_stereo[i, j] = xy_stereo[0]
             y_stereo[i, j] = xy_stereo[1]
 
     # transform to south pole stereographic xy coordinates
 
-    Z = np.zeros((n, n))
+    Z = np.zeros((n_x, n_y))
     
-    for i in range(n):
-        for j in range(n):
+    for i in range(n_x):
+        for j in range(n_y):
             cell = grid[i][j]
             #print(i, j)
             if cell.goal:  
@@ -320,8 +327,8 @@ def visualize_problem(problem: Problem):
     cmesh = ax.pcolormesh(y_stereo, x_stereo, Z, cmap='RdBu')
     ax.set_aspect('equal', 'box')
 
-    xy_init = Indices_to_Stereo(initX + 0.5, initY + 0.5, n)
-    xy_goal = Indices_to_Stereo(goalX + 0.5, goalY + 0.5, n)
+    xy_init = Indices_to_Stereo(initX + 0.5, initY + 0.5, n_x, n_y)
+    xy_goal = Indices_to_Stereo(goalX + 0.5, goalY + 0.5, n_x, n_y)
 
     plt.plot(xy_init[1], xy_init[0], 'y*', markersize=20, markeredgecolor='black', label='Start Point')
     plt.plot(xy_goal[1], xy_goal[0], 'g*', markersize=20, markeredgecolor='black', label='End Point')
@@ -351,7 +358,8 @@ solution = ast.search()
 
 path = {
     'latitude' : [],
-    'longitude' : []
+    'longitude' : [],
+    'grade' : []
 }
 
 if solution:
@@ -359,6 +367,7 @@ if solution:
     for state in solution.path():
         path["latitude"].append(prob.grid[state.x][state.y].lat)
         path["longitude"].append(prob.grid[state.x][state.y].long)
+        path["grade"].append(prob.grid[state.x][state.y].grade)
         print(state.__str__())
     print("solution cost=", solution.path_cost) #prints coordinate of solution
 else:

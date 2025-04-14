@@ -62,7 +62,7 @@ class Node:
     def path(self): # path from to root node to this node
         node, path_back = self, []
         while node:
-            path_back.append(node.state)
+            path_back.append((node.state, node.action))
             node = node.parent
         return list(reversed(path_back))
     
@@ -90,8 +90,8 @@ Action ={"UP":(-step, 0),"DOWN":(step, 0),"LEFT":(0, -step),"RIGHT":(0, step),"U
 def available_actions(state, grid):
     actions = []
     x, y = state.x, state.y
-    maxInd_X = np.shape(grid)[0]
-    maxInd_Y = np.shape(grid)[1]
+    maxInd_X = np.shape(grid)[0] - 1
+    maxInd_Y = np.shape(grid)[1] - 1
 
     ### ADJUSTABLE VARIABLES ##
     step = 1
@@ -165,23 +165,29 @@ class AStarSearch:
             yield Node(state=s_prime, parent=node, action=action, path_cost=node.path_cost + cost_action)
 
 def manhattan_heuristic(state, problem):
-    goal_positions = [(i, j) for i in range(len(problem.grid)) for j in range(len(problem.grid[0]))
-                    if problem.grid[i, j].goal]
-    return min(abs(state.x - gx) + abs(state.y - gy) for gx, gy in goal_positions)
+    return abs(state.x - goalX) + abs(state.y - goalY)
+
+def havDist(lat1, lat2, long1, long2, radius):
+    return 2*radius*np.arcsin(np.sqrt((1 - np.cos(lat2-lat1) + np.cos(lat1)*np.cos(lat2)*(1 - np.cos(long2-long1)))/2))
+
 
 pointA = [-85.292466, 36.920242] #start point
 pointB = [-84.7906, 29.1957]     #end point
 #boundingBox
 minLat, maxLat, minLong, maxLong = -85.5, -84, 28, 38
 
+
 #IMPORT BOUND BOX DATA AND GENERATE GRID
-lat_points = 1820
+lat_points = 1820 
 lon_points = 1108
+radius = 1737.4000
+minHavStart = 1000.0 # intialize value
+minHavEnd = 1000.0
 grid = np.empty((lat_points,lon_points), dtype=object)
 # Read CSV file
 print("Reading Data")
 step = 0
-with open('Terrain_data_25.csv', mode='r') as file:
+with open('megathingy.csv', mode='r') as file:
     reader = csv.reader(file, delimiter=',')
     next(reader, None)
     i = 0
@@ -204,12 +210,19 @@ with open('Terrain_data_25.csv', mode='r') as file:
 
         #Store initial state
         if round(lat,2) == round(pointA[0],2) and round(long,2) == round(pointA[1],2):
-            initX = i
-            initY = j
+            if havDist(pointA[0], lat, pointA[1], long, radius) < minHavStart:
+                minHavStart = havDist(pointA[0], lat, pointA[1], long, radius)
+                initX = i
+                initY = j
+                #print(lat,long, "dist", havDist(pointA[0], lat, pointA[1], long, radius)) 
 
         #set goal state using science
         if round(lat,2) == round(pointB[0],2) and round(long,2) == round(pointB[1],2):
-            goal = True
+            if havDist(pointB[0], lat, pointB[1], long, radius) < minHavEnd:
+                minHavEnd = havDist(pointB[0], lat, pointB[1], long, radius)
+                goalX = i
+                goalY = j
+                # print(lat,long, "dist", havDist(pointB[0], lat, pointB[1], long, radius)) 
 
         #Danger Equation Implemented
         if grade >= 20 or ill == 0:
@@ -237,6 +250,7 @@ with open('Terrain_data_25.csv', mode='r') as file:
             j = 0
             i += 1
 
+grid[goalX,goalY].goal = True
 
 print("done reading !!!")
 
@@ -315,7 +329,7 @@ def visualize_problem(problem: Problem):
     init_state = problem.initial_state
     color_grid_trev[init_state.x,init_state.y] = [0,0,1]
 
-    '''df = pd.read_csv('A_star_Path.csv')
+    df = pd.read_csv('A_star_Path.csv')
     path_lats = df['latitude'].to_numpy()
     path_longs = df['longitude'].to_numpy()
     
@@ -324,7 +338,7 @@ def visualize_problem(problem: Problem):
         pcpf = LLA_to_PCPF(np.deg2rad(path_lats[i]),np.deg2rad(path_longs[i]),0.0,1737400.0)
         stereo = [pcpf[0] / (1 - pcpf[2]), pcpf[1] / (1 - pcpf[2])]
         for j in range(2):
-            path_stero[i][j] = stereo[j]'''
+            path_stero[i][j] = stereo[j]
 
 
 
@@ -339,7 +353,7 @@ def visualize_problem(problem: Problem):
 
     xy_init = Indices_to_Stereo(initX + 0.5, initY + 0.5, n_X, n_Y)
     xy_goal = Indices_to_Stereo(goalX + 0.5, goalY + 0.5, n_X, n_Y)
-    #plt.plot(path_stero[:,1],path_stero[:,0],color ='magenta',label = 'path')
+    plt.plot(path_stero[:,1],path_stero[:,0],color ='magenta',label = 'path')
     plt.scatter(xy_init[1], xy_init[0], s=50, facecolors='none', edgecolors='lime', linewidths=2, label='Landing Site')
     plt.scatter(xy_goal[1], xy_goal[0], s=50, facecolors='none', edgecolors='gold', linewidths=2, label='IM-2 (ISRU)')
 
@@ -353,7 +367,7 @@ def visualize_problem(problem: Problem):
     ax.set_title("Weight Map with Path")
     plt.savefig("LSMpathMap.jpg", format='jpeg', dpi=1200)
 
-visualize_problem(prob)
+
 
 
 
@@ -368,15 +382,23 @@ solution = ast.search()
 
 path = {
     'latitude' : [],
-    'longitude' : []
+    'longitude' : [],
+    'elevation' : [],
+    'grade' : [],
+    'action' : []
 }
 
 if solution:
     print("Solution found:")
-    for state in solution.path():
+    # print(solution.path())
+    for item in solution.path():
+        state = item[0]
         path["latitude"].append(prob.grid[state.x][state.y].lat)
         path["longitude"].append(prob.grid[state.x][state.y].long)
-        print(state.__str__())
+        path["elevation"].append(prob.grid[state.x][state.y].elevation)
+        path["grade"].append(prob.grid[state.x][state.y].grade)
+        path['action'].append(item[1])
+        
     print("solution cost=", solution.path_cost) #prints coordinate of solution
 else:
     print("No solution found.")
@@ -386,7 +408,9 @@ running = end_time - start_time
 print('runtime', running)
 
 df = pd.DataFrame(path)
-df.to_csv('A_star_Path_25.csv',index=False) 
+df.to_csv('A_star_Path.csv',index=True) 
+
+visualize_problem(prob)
 
 def operations(path):
     grid_size = 100 #[m]

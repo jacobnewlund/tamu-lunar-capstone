@@ -186,10 +186,10 @@ pointB = [-84.7906, 29.1957]     #end point
 minLat, maxLat, minLong, maxLong = -85.5, -84, 28, 38
 
 #IMPORT BOUND BOX DATA AND GENERATE GRID
-yippee = 500
+yippee = 250
 grid = np.empty((yippee,yippee), dtype=object)
 # Read CSV file
-with open('terrain_data.csv', mode='r') as file:
+with open('terrain_data_tiny.csv', mode='r') as file:
     reader = csv.reader(file, delimiter=',')
     next(reader, None)
     i = 0
@@ -368,7 +368,6 @@ print('runtime', running)
 #segment path
 #check for rough elevation changes, implement multi-mode (optimize with budget)
 #display power requirements and deployment
-
 
 
 

@@ -73,8 +73,9 @@ latLongEnd = (np.deg2rad(-85.5), np.deg2rad(38)) # Same as above
 # nice flat starting point -85.29247, 36.92024
 #===================================================#
 
-inbetweenLatPoints = 1820 # change these to increase fineness of data
-inbetweenLongPoints = 1108
+inbetweenLatPoints = 455 # change these to increase fineness of data
+inbetweenLongPoints = 277 # inbetweenLatPoints = 1820 # change these to increase fineness of data
+# inbetweenLongPoints = 1108
 
 
 # Now, we need to actually run over these bounds. I'll give you one guess how we do that. (it's a for loop!!!)
