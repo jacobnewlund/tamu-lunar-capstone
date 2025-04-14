@@ -210,7 +210,7 @@ with open('megathingy.csv', mode='r') as file:
 
         #Store initial state
         if round(lat,2) == round(pointA[0],2) and round(long,2) == round(pointA[1],2):
-            if havDist(pointA[0], lat, pointA[1], long, radius) < minHavStart:
+            if havDist(np.deg2rad(pointA[0]), np.deg2rad(lat), np.deg2rad(pointA[1]), long, radius) < minHavStart:
                 minHavStart = havDist(pointA[0], lat, pointA[1], long, radius)
                 initX = i
                 initY = j
@@ -353,18 +353,18 @@ def visualize_problem(problem: Problem):
 
     xy_init = Indices_to_Stereo(initX + 0.5, initY + 0.5, n_X, n_Y)
     xy_goal = Indices_to_Stereo(goalX + 0.5, goalY + 0.5, n_X, n_Y)
-    plt.plot(path_stero[:,1],path_stero[:,0],color ='magenta',label = 'path')
+    plt.plot(path_stero[:,1],path_stero[:,0],color ='magenta',label = 'Path')
     plt.scatter(xy_init[1], xy_init[0], s=50, facecolors='none', edgecolors='lime', linewidths=2, label='Landing Site')
     plt.scatter(xy_goal[1], xy_goal[0], s=50, facecolors='none', edgecolors='gold', linewidths=2, label='IM-2 (ISRU)')
 
 
     # Add colorbar
     cbar = fig.colorbar(cmesh, ax=ax)
-    cbar.set_label("Weight")  # Set label for colorbar
+    cbar.set_label("Cost")  # Set label for colorbar
 
 
     ax.legend(bbox_to_anchor=(0, 1), loc='upper left')
-    ax.set_title("Weight Map with Path")
+    ax.set_title("Cost Map with Path")
     plt.savefig("LSMpathMap.jpg", format='jpeg', dpi=1200)
 
 
