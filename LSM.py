@@ -160,33 +160,38 @@ def visualize_solution(problem, path):
 
     visualize_problem(problem)
 
-    tram_x = []
-    tram_y = []
-    rail_x = []
-    rail_y = []
+    # tram_x = []
+    # tram_y = []
+    # rail_x = []
+    # rail_y = []
 
-    # Adjust for the flipped y-axis in matplotlib vs numpy and sort by transport system
-    for state in path:
-        if grid[state.x][state.y].grade > 0.5:
-            tram_x.append(state.y + 0.5)
-            tram_y.append(n-state.x-0.5)
-        else:
-            rail_x.append(state.y + 0.5)
-            rail_y.append(n-state.x-0.5)
+    # # Adjust for the flipped y-axis in matplotlib vs numpy and sort by transport system
+    # for state in path:
+    #     if grid[state.x][state.y].grade > 0.5:
+    #         tram_x.append(state.y + 0.5)
+    #         tram_y.append(n-state.x-0.5)
+    #     else:
+    #         rail_x.append(state.y + 0.5)
+    #         rail_y.append(n-state.x-0.5)
 
-    transition_x = [rail_x[0],tram_x[-1]]
-    transition_y = [rail_y[0],tram_y[-1]]
+    # transition_x = [rail_x[0],tram_x[-1]]
+    # transition_y = [rail_y[0],tram_y[-1]]
 
-    #plot transport type 1
-    plt.plot(tram_x, tram_y, color='blue', linewidth=2, label="Tram")
-    #plot transport type 2
-    plt.plot(rail_x, rail_y, color='red', linewidth=2, label="Rail")
-    #plot transition
-    plt.plot(transition_x, transition_y, color='black', linewidth=2, label="Transition")
+    # #plot transport type 1
+    # plt.plot(tram_x, tram_y, color='blue', linewidth=2, label="Tram")
+    # #plot transport type 2
+    # plt.plot(rail_x, rail_y, color='red', linewidth=2, label="Rail")
+    # #plot transition
+    # plt.plot(transition_x, transition_y, color='black', linewidth=2, label="Transition")
 
+    # Adjust for the flipped y-axis in matplotlib vs numpy
+    path_x = [state.y + 0.5 for state in path]  # Flip x and y because matplotlib expects (row, col)
+    path_y = [n - state.x - 0.5 for state in path]  # Flip y-axis to match numpy indexing
+
+    plt.plot(path_x, path_y, color='blue', linewidth=2, label="Path")
     plt.title("Solution")
     plt.legend()
-    plt.savefig('PathSolution.png')
+    plt.savefig(f'Solution{len(problem.grid)}')
     plt.close()
 
 class AStarSearch:
@@ -261,15 +266,15 @@ for i in range(0,len(ill)):
 print(tot)
 
 def create_path(pointA, pointB):
-    grid = np.empty((5, 5), dtype=object)
-    for i in range(5):
-        for j in range(5):
+    grid = np.empty((10, 10), dtype=object)
+    for i in range(10):
+        for j in range(10):
             science = 0
-            grade = gr[i][j]
-            elevation = elev[i][j]
-            roughness = rou[i][j]
-            danger = tot[i][j]
-            grid[i, j] = GridCell(science=science, grade=grade, elevation=elevation, roughness=roughness, danger=danger)
+            # grade = gr[i][j]
+            # elevation = elev[i][j]
+            # roughness = rou[i][j]
+            danger = random.random()
+            grid[i, j] = GridCell(science=science, grade=0, elevation=0, roughness=0, danger=danger)
     Ay = 4-int(pointA[1])
     Ax = int(pointA[3])
     By = 4-int(pointB[1])
@@ -293,6 +298,6 @@ def create_path(pointA, pointB):
     return solution
 
 ##### USER INTERACTION #####
-A = input('Enter Location A (x,y) Coordinates: ')
-B = input('Enter Location B (x,y) Coordinates: ')
-create_path(A, B)
+# A = input('Enter Location A (x,y) Coordinates: ')
+# B = input('Enter Location B (x,y) Coordinates: ')
+create_path('(0,9)', '(9,0)')
