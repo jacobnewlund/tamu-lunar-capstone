@@ -69,12 +69,12 @@ def mode_optimization(pathfile):
                 dist += havDist(np.deg2rad(path['latitude'][step]),np.deg2rad(path['latitude'][step + 1]),np.deg2rad(path['longitude'][step]),np.deg2rad(path['longitude'][step + 1]),1737400.0)
                 step += 1
                 type = 'straight'
-                print('straight')
+                #print('straight')
                 if step + 3 == len(path['latitude']) - 1:
                     break
             segments.append(Segment(type=type, start_ind=start, end_ind=step, length = dist))
             start = step
-
+            dist = 0
             while path['action'][step] != step_direction or path['action'][step + 1] != step_direction or path['action'][step + 2] != step_direction or path['action'][step + 3] != step_direction :
                 dist += havDist(np.deg2rad(path['latitude'][step]),np.deg2rad(path['latitude'][step + 1]),np.deg2rad(path['longitude'][step]),np.deg2rad(path['longitude'][step + 1]),1737400.0)
                 step += 1
@@ -86,10 +86,13 @@ def mode_optimization(pathfile):
             segments.append(Segment(type=type, start_ind=start, end_ind=step, length = dist))
             dist = 0
             step_direction = path['action'][step]
-
+            
         else:
             type = 'end'
+            dist += havDist(np.deg2rad(path['latitude'][step]),np.deg2rad(path['latitude'][step + 1]),np.deg2rad(path['longitude'][step]),np.deg2rad(path['longitude'][step + 1]),1737400.0)
             step += 1
+    segments.append(Segment(type=type, start_ind=start, end_ind=step, length=dist))
+        
 
     print(100,'% through gathering distances')
 

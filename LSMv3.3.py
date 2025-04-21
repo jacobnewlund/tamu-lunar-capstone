@@ -455,12 +455,21 @@ def visualize_problem(problem: Problem):
         i = int(seg.start)
         j = int(seg.end)
 
-        if seg.type == 'straight':
+        if seg.type == 'straight' and seg.length >= 1000:
+            rail_type = 'tram'
             tramX.append(path_stero[i:j,1])
             tramY.append(path_stero[i:j,0])
-        elif seg.type == 'curve':
+        elif seg.type == 'curve' or seg.length < 1000:
+            rail_type = 'mono' 
             monoX.append(path_stero[i:j,1])
             monoY.append(path_stero[i:j,0])
+        elif seg.type == 'end':
+            if rail_type == 'tram':
+                tramX.append(path_stero[i:j,1])
+                tramY.append(path_stero[i:j,0])
+            elif rail_type == 'mono':
+                monoX.append(path_stero[i:j,1])
+                monoY.append(path_stero[i:j,0])
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -485,8 +494,8 @@ def visualize_problem(problem: Problem):
         plotted_labels['Tramway'] = True
 
     for x, y in zip(monoX, monoY):
-        label = 'MONORAIL' if not plotted_labels['MONORAIL'] else None
-        plt.plot(x, y, color='green', label=label)
+        label = 'Monorail' if not plotted_labels['MONORAIL'] else None
+        plt.plot(x, y, color='aqua', label=label)
         plotted_labels['MONORAIL'] = True
 
     # Add colorbar
