@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import heapq
 from collections import deque
 import time
@@ -140,14 +141,28 @@ def visualize_problem(problem):
     for i in range(n):
         for j in range(n):
             cell = grid[i][j]
+            danger = cell.danger
             if cell.science >=0.95:  
-                color_grid[i, j] = [0, 1, 0]  # Green for goal
-            elif cell.danger >= 0.5:  
-                color_grid[i, j] = [1, 0, 0]  # Red for unsafe
+                color_grid[i, j] = [0, 1, 1]  # Green for goal
+            # elif cell.danger > 0,5:
+            #     color_grid[i, j] = [1, 1-]
             else:  # Safe cell
-                color_grid[i, j] = [1, 1, 1]  # White for safe cells
+                color_grid[i, j] = [1, 1-danger, 1-danger]  # Blue for safe cells
     init_state = problem.initial_state
-    color_grid[init_state.x,init_state.y] = [0,0,1]
+    color_grid[init_state.x,init_state.y] = [0,1,0]
+
+    fig, ax = plt.subplots()
+
+    # Show RGB grid
+    ax.imshow(color_grid, origin='lower', extent=[0, n, 0, n])
+
+    # Overlay invisible danger map for colorbar
+    norm = mcolors.Normalize(vmin=0, vmax=1)
+    sm = plt.cm.ScalarMappable(cmap='Reds', norm=norm)
+    sm.set_array([])  # required for colorbar
+    cbar = plt.colorbar(sm, ax=ax)
+    cbar.set_label("Traversability")
+
     # Plot the grid
     plt.imshow(color_grid, extent=[0, n, 0, n])
     plt.grid(True)
@@ -159,37 +174,16 @@ def visualize_solution(problem, path):
     n = len(grid)
 
     visualize_problem(problem)
-
-    # tram_x = []
-    # tram_y = []
-    # rail_x = []
-    # rail_y = []
-
-    # # Adjust for the flipped y-axis in matplotlib vs numpy and sort by transport system
-    # for state in path:
-    #     if grid[state.x][state.y].grade > 0.5:
-    #         tram_x.append(state.y + 0.5)
-    #         tram_y.append(n-state.x-0.5)
-    #     else:
-    #         rail_x.append(state.y + 0.5)
-    #         rail_y.append(n-state.x-0.5)
-
-    # transition_x = [rail_x[0],tram_x[-1]]
-    # transition_y = [rail_y[0],tram_y[-1]]
-
-    # #plot transport type 1
-    # plt.plot(tram_x, tram_y, color='blue', linewidth=2, label="Tram")
-    # #plot transport type 2
-    # plt.plot(rail_x, rail_y, color='red', linewidth=2, label="Rail")
-    # #plot transition
-    # plt.plot(transition_x, transition_y, color='black', linewidth=2, label="Transition")
-
     # Adjust for the flipped y-axis in matplotlib vs numpy
     path_x = [state.y + 0.5 for state in path]  # Flip x and y because matplotlib expects (row, col)
     path_y = [n - state.x - 0.5 for state in path]  # Flip y-axis to match numpy indexing
 
-    plt.plot(path_x, path_y, color='blue', linewidth=2, label="Path")
-    plt.title("Solution")
+    plt.plot(path_x, path_y, color='black', linewidth=2, label="Path")
+    plt.scatter(0.5, 0.5, color='green', label='point A')
+    plt.scatter(9.5, 9.5, color='blue', label='point B')
+    plt.title("EXAMPLE A*")
+    plt.xlabel('x')
+    plt.ylabel('y')
     plt.legend()
     plt.savefig(f'Solution{len(problem.grid)}')
     plt.close()
@@ -275,9 +269,9 @@ def create_path(pointA, pointB):
             # roughness = rou[i][j]
             danger = random.random()
             grid[i, j] = GridCell(science=science, grade=0, elevation=0, roughness=0, danger=danger)
-    Ay = 4-int(pointA[1])
+    Ay = int(pointA[1])
     Ax = int(pointA[3])
-    By = 4-int(pointB[1])
+    By = int(pointB[1])
     Bx = int(pointB[3])
     grid[Bx][By].science = 1
     initial_state = transportState(Ax, Ay)
