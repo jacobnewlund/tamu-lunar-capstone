@@ -161,7 +161,7 @@ def visualize_problem(problem):
     sm = plt.cm.ScalarMappable(cmap='Reds', norm=norm)
     sm.set_array([])  # required for colorbar
     cbar = plt.colorbar(sm, ax=ax)
-    cbar.set_label("Danger Level")
+    cbar.set_label("Traversability")
 
     # Plot the grid
     plt.imshow(color_grid, extent=[0, n, 0, n])
