@@ -38,6 +38,7 @@ with open('path_segments.csv', mode='r') as segFile,  open('A_star_Path.csv', mo
 def segmentPlacer(lats, longs, dists, dirs, segType): # generates tower placements per segment spaced evenly
     segDist = sum(dists) # get total length of segment
     towersAdded = 0 # see how many towers we added. For reasons.
+    unTransition = "transition" # weirdo catch for the Carl Optimization
 
     if segType == "start": # if it's the start position (so, no action), make sure to plot the first tower. otherwise only plot mid until last tower
         towerLocs.append([[lats[0], longs[0]], "start"])
@@ -50,8 +51,14 @@ def segmentPlacer(lats, longs, dists, dirs, segType): # generates tower placemen
     # now we need to create the distance function
     totalDist = np.sum(dists)
 
-    if segType == "straight":
+    if segType == "straight" and segDist >= 1000:
         typeMaxDist = 100
+    elif segType == "straight" and segDist < 1000: # implement the Carl Optimization
+        typeMaxDist = 25
+        segType = "curve" # and make it a curve anyway
+        # and then retroactively change the previous tower (the transisiton tower) to a curve since nothings transitioning
+        unTransition = "curve"
+        towerLocs[-1] = [towerLocs[-1][0], "curve"]
     else: # then it's a curve
         typeMaxDist = 25
 
@@ -124,7 +131,7 @@ def segmentPlacer(lats, longs, dists, dirs, segType): # generates tower placemen
         towersAdded += 1
     else:
         towerLocs.append([[currentLat, currentLong], segType]) 
-        towerLocs.append([[lats[-1], longs[-1]], "transition"])
+        towerLocs.append([[lats[-1], longs[-1]], unTransition])
         towersAdded += 1
     print("Added", towersAdded, "tower(s) this segment.")
 
