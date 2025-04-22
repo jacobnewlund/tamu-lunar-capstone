@@ -11,17 +11,17 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
         Distance is in METERS'''
     
     tot_dist = monoDist + tramDist
-    tot_tower = smallTower + medTower + largeTower + transTower
+    tot_tower = int(smallTower + medTower + largeTower + transTower)
 
     # NOTE ADJUST FOLLOWING FOR DIFFERENT MATERIAL/PRICING
-    monoRailMass = 33 #kg/m of rail
-    tramRailMass = 2.75 #kg/m rail
+    monoRailMass = 40 #kg/m of rail
+    tramRailMass = 7.3 #kg/m rail
     genRailCost = 3.50 # $/m
     #TOWERS
     monoTowerMass1 = 140 #kg [4m tower]
     monoTowerMass2 = 187 #kg [6m tower]
     tramTowerMass = 456 #kg  [10m tower]
-    towerCost = 3   #$/kg
+    genTowerCost = 3   #$/kg
     
 
     print()
@@ -33,13 +33,13 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
     tot_mass = monoMass + tramMass + transitionMass
 
     #material cost
-    towerCost = (smallTower*monoTowerMass1 + medTower*monoTowerMass2 + (largeTower + transTower*2)*tramTowerMass)
+    towerCost = (smallTower*monoTowerMass1 + medTower*monoTowerMass2 + (largeTower + transTower*2)*tramTowerMass)*genTowerCost
     railCost = (monoRailMass*monoDist + tramRailMass*tramDist)*genRailCost
     mat_cost = towerCost + railCost
     #purely one system calculations:
-    mono_cost1 = tot_dist*monoRailMass + tot_tower*smallTower*towerCost
-    mono_cost2 = tot_dist*monoRailMass + tot_tower*medTower*towerCost
-    tram_cost = tot_dist*tramRailMass*genRailCost + tot_tower*tramTowerMass*towerCost
+    mono_cost1 = tot_dist*monoRailMass*genRailCost + (tot_dist/25)*monoTowerMass1*genTowerCost
+    mono_cost2 = tot_dist*monoRailMass*genRailCost + (tot_dist/25)*monoTowerMass2*genTowerCost
+    tram_cost = tot_dist*tramRailMass*genRailCost + (tot_dist/100)*tramTowerMass*genTowerCost
     print('--> Material cost calculations complete !!')
     # print('The total material cost of the system will be ${:.2f}'.format(mat_cost))
     # print('The total cost of a purely 4m tower monorail system is ${:.2f}'.format(mono_cost1))
@@ -58,9 +58,9 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
         capacity = 3*907.185 #kg/launch
         launchCost = 0
     launches = np.ceil(tot_mass/capacity)
-    mono1_launches = np.ceil((tot_dist*monoRailMass + tot_tower*monoTowerMass1)/capacity)
-    mono2_launches = np.ceil((tot_dist*monoRailMass + tot_tower*monoTowerMass2)/capacity)
-    tram_launches = np.ceil((tot_dist*tramRailMass + tot_tower*tramTowerMass)/capacity)
+    mono1_launches = np.ceil((tot_dist*monoRailMass + (tot_dist/25)*monoTowerMass1)/capacity)
+    mono2_launches = np.ceil((tot_dist*monoRailMass + (tot_dist/25)*monoTowerMass2)/capacity)
+    tram_launches = np.ceil((tot_dist*tramRailMass + (tot_dist/100)*tramTowerMass)/capacity)
 
     #LTV delivery schedule made with the following ASSUMPTIONS
     #1. 25m between each tower
@@ -72,8 +72,24 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
     LTVtravel = 0
 
     for i in range(1, tot_tower+1):
-        if LTVtravel == LTVspeed:
+        if LTVtravel > LTVspeed:
             LTVtime += 1
+            LTVtravel = 0
+        LTVtravel += 25*i*2
+    
+    LTVtimeMono = 0
+    LTVtravel = 0
+    for i in range(1, int(tot_dist/25)+1):
+        if LTVtravel > LTVspeed:
+            LTVtimeMono += 1
+            LTVtravel = 0
+        LTVtravel += 25*i*2
+
+    LTVtimeTram = 0
+    LTVtravel = 0
+    for i in range(1, int(tot_dist/100)+1):
+        if LTVtravel > LTVspeed:
+            LTVtimeTram += 1
             LTVtravel = 0
         LTVtravel += 25*i*2
 
@@ -97,12 +113,14 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
 
     #OUTPUT TABLE
     print(tabulate([['Mixture of Transportation', '{:,.2f}'.format(mat_cost), '{:,.2f}'.format(tot_launchCost), '{:,.2f}'.format(tot_cost), tot_time], 
-                    ['Purely Monorail [4m Towers]', '{:,.2f}'.format(mono_cost1), '{:,.2f}'.format(mono_launchCost1), '{:,.2f}'.format(mono_cost1 + mono_launchCost1), np.ceil(mono1_launches + LTVtime/28)], 
-                    ['Purely Monorail [6m Towers]', '{:,.2f}'.format(mono_cost2), '{:,.2f}'.format(mono_launchCost2), '{:,.2f}'.format(mono_cost2 + mono_launchCost2),np.ceil(mono2_launches + LTVtime/28)], 
-                    ['Purely Tramway [10m Towers]', '{:,.2f}'.format(tram_cost), '{:,.2f}'.format(tram_launchCost), '{:,.2f}'.format(tram_cost + tram_launchCost), np.ceil(tram_launches + LTVtime/28)]], 
+                    ['Purely Monorail [4m Towers]', '{:,.2f}'.format(mono_cost1), '{:,.2f}'.format(mono_launchCost1), '{:,.2f}'.format(mono_cost1 + mono_launchCost1), np.ceil(mono1_launches + LTVtimeMono/28)], 
+                    ['Purely Monorail [6m Towers]', '{:,.2f}'.format(mono_cost2), '{:,.2f}'.format(mono_launchCost2), '{:,.2f}'.format(mono_cost2 + mono_launchCost2),np.ceil(mono2_launches + LTVtimeMono/28)], 
+                    ['Purely Tramway [10m Towers]', '{:,.2f}'.format(tram_cost), '{:,.2f}'.format(tram_launchCost), '{:,.2f}'.format(tram_cost + tram_launchCost), np.ceil(tram_launches + LTVtimeTram/28)]], 
                    headers=['System', 'Mat Cost [$]', 'Launch Cost [$]', 'Total Cost [$]', 'Deployment Time [months]'], tablefmt='orgtbl'))
     print()
-    
+    print(tot_tower)
+    print(tot_dist/25)
+
     return mat_cost, tot_time, tot_cost
 
-operations(3, 4, 5, 1, 125, 125, 0)
+operations(0, 262, 208, 14, 6458.39, 21306.93, 0)
