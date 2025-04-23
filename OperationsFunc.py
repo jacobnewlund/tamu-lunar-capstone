@@ -67,7 +67,7 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
     #2. one trip per tower
     LTVcapacity = 1600 #kg [MAX capacity. nominal is 800]
     LTVlimit = 20 #km before recharge necessary
-    LTVspeed = 6000 #m/day 
+    LTVspeed = 15000 #m/hr 
     LTVtime = 1
     LTVtravel = 0
 
@@ -93,7 +93,7 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
             LTVtravel = 0
         LTVtravel += 25*i*2
 
-    tot_time = launches + np.ceil(LTVtime/28) #months
+    tot_time = launches + np.ceil(LTVtime/730) #months
     tot_launchCost = launches*launchCost
     mono_launchCost1 = mono1_launches*launchCost
     mono_launchCost2 = mono2_launches*launchCost 
@@ -113,9 +113,9 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
 
     #OUTPUT TABLE
     print(tabulate([['Mixture of Transportation', '{:,.2f}'.format(mat_cost), '{:,.2f}'.format(tot_launchCost), '{:,.2f}'.format(tot_cost), tot_time], 
-                    ['Purely Monorail [4m Towers]', '{:,.2f}'.format(mono_cost1), '{:,.2f}'.format(mono_launchCost1), '{:,.2f}'.format(mono_cost1 + mono_launchCost1), np.ceil(mono1_launches + LTVtimeMono/28)], 
-                    ['Purely Monorail [6m Towers]', '{:,.2f}'.format(mono_cost2), '{:,.2f}'.format(mono_launchCost2), '{:,.2f}'.format(mono_cost2 + mono_launchCost2),np.ceil(mono2_launches + LTVtimeMono/28)], 
-                    ['Purely Tramway [10m Towers]', '{:,.2f}'.format(tram_cost), '{:,.2f}'.format(tram_launchCost), '{:,.2f}'.format(tram_cost + tram_launchCost), np.ceil(tram_launches + LTVtimeTram/28)]], 
+                    ['Purely Monorail [4m Towers]', '{:,.2f}'.format(mono_cost1), '{:,.2f}'.format(mono_launchCost1), '{:,.2f}'.format(mono_cost1 + mono_launchCost1), np.ceil(mono1_launches + LTVtimeMono/720)], 
+                    ['Purely Monorail [6m Towers]', '{:,.2f}'.format(mono_cost2), '{:,.2f}'.format(mono_launchCost2), '{:,.2f}'.format(mono_cost2 + mono_launchCost2),np.ceil(mono2_launches + LTVtimeMono/720)], 
+                    ['Purely Tramway [10m Towers]', '{:,.2f}'.format(tram_cost), '{:,.2f}'.format(tram_launchCost), '{:,.2f}'.format(tram_cost + tram_launchCost), np.ceil(tram_launches + LTVtimeTram/720)]], 
                    headers=['System', 'Mat Cost [$]', 'Launch Cost [$]', 'Total Cost [$]', 'Deployment Time [months]'], tablefmt='orgtbl'))
     print()
     print(tot_tower)
