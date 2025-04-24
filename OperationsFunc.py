@@ -7,39 +7,45 @@ from tabulate import tabulate
 
 def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist, vehicleChoice):
     '''INPUT EXPLAINED:
-        Towers = # of towers for type
-        Distance is in METERS'''
+        smallTower = # of 4m Towers
+        medTower = # of 6m Towers
+        largeTower = # of 10m Towers
+        transTowers = # of transition Towers
+        Distance values are in METERS
+        vehicldChoice = 0 (SpaceX) or 1 (BlueOrigin)'''
     
     tot_dist = monoDist + tramDist
     tot_tower = int(smallTower + medTower + largeTower + transTower)
 
-    # NOTE ADJUST FOLLOWING FOR DIFFERENT MATERIAL/PRICING
-    monoRailMass = 40 #kg/m of rail
-    tramRailMass = 7.3 #kg/m rail
+    # NOTE ADJUST FOLLOWING FOR DIFFERENT MATERIAL + PRICING
+    monoRail_mass = 40 #kg/m of rail
+    tramRail_mass = 7.3 #kg/m rail
     genRailCost = 3.50 # $/m
     #TOWERS
-    monoTowerMass1 = 140 #kg [4m tower]
-    monoTowerMass2 = 187 #kg [6m tower]
-    tramTowerMass = 456 #kg  [10m tower]
+    smallMass = 140 #kg [4m tower]
+    medMass = 187 #kg [6m tower]
+    largeMass = 456 #kg  [10m tower]
     genTowerCost = 3   #$/kg
     
-
-    print()
     print('Beginning material calculations')
     #mass calc of multi-mode system
-    monoMass = monoRailMass*monoDist + monoTowerMass1*smallTower + monoTowerMass2*medTower 
-    tramMass = tramRailMass*tramDist + tramTowerMass*largeTower
-    transitionMass = transTower*tramTowerMass*2 
+    monoMass = monoRail_mass*monoDist + smallMass*smallTower + medMass*medTower 
+    tramMass = tramRail_mass*tramDist + largeMass*largeTower
+    transitionMass = transTower*largeMass*2 
     tot_mass = monoMass + tramMass + transitionMass
 
+    pureSmallMass = monoRail_mass*tot_dist + smallMass*tot_tower
+    pureMedMass = monoRail_mass*tot_dist + medMass*tot_tower
+    pureLargeMass = tramRail_mass*tot_dist + largeMass*tot_tower
+
     #material cost
-    towerCost = (smallTower*monoTowerMass1 + medTower*monoTowerMass2 + (largeTower + transTower*2)*tramTowerMass)*genTowerCost
-    railCost = (monoRailMass*monoDist + tramRailMass*tramDist)*genRailCost
+    towerCost = (smallTower*smallMass + medTower*medMass + (largeTower + transTower*2)*largeMass)*genTowerCost
+    railCost = (monoRail_mass*monoDist + tramRail_mass*tramDist)*genRailCost
     mat_cost = towerCost + railCost
     #purely one system calculations:
-    mono_cost1 = tot_dist*monoRailMass*genRailCost + (tot_dist/25)*monoTowerMass1*genTowerCost
-    mono_cost2 = tot_dist*monoRailMass*genRailCost + (tot_dist/25)*monoTowerMass2*genTowerCost
-    tram_cost = tot_dist*tramRailMass*genRailCost + (tot_dist/100)*tramTowerMass*genTowerCost
+    mono_cost1 = tot_dist*monoRail_mass*genRailCost + (tot_dist/25)*smallMass*genTowerCost
+    mono_cost2 = tot_dist*monoRail_mass*genRailCost + (tot_dist/25)*medMass*genTowerCost
+    tram_cost = tot_dist*tramRail_mass*genRailCost + (tot_dist/100)*largeMass*genTowerCost
     print('--> Material cost calculations complete !!')
     # print('The total material cost of the system will be ${:.2f}'.format(mat_cost))
     # print('The total cost of a purely 4m tower monorail system is ${:.2f}'.format(mono_cost1))
@@ -58,9 +64,9 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
         capacity = 3*907.185 #kg/launch
         launchCost = 0
     launches = np.ceil(tot_mass/capacity)
-    mono1_launches = np.ceil((tot_dist*monoRailMass + (tot_dist/25)*monoTowerMass1)/capacity)
-    mono2_launches = np.ceil((tot_dist*monoRailMass + (tot_dist/25)*monoTowerMass2)/capacity)
-    tram_launches = np.ceil((tot_dist*tramRailMass + (tot_dist/100)*tramTowerMass)/capacity)
+    mono1_launches = np.ceil((tot_dist*monoRail_mass + (tot_dist/25)*smallMass)/capacity)
+    mono2_launches = np.ceil((tot_dist*monoRail_mass + (tot_dist/25)*medMass)/capacity)
+    tram_launches = np.ceil((tot_dist*tramRail_mass + (tot_dist/100)*largeMass)/capacity)
 
     #LTV delivery schedule made with the following ASSUMPTIONS
     #1. 25m between each tower
@@ -112,14 +118,12 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
     print()
 
     #OUTPUT TABLE
-    print(tabulate([['Mixture of Transportation', '{:,.2f}'.format(mat_cost), '{:,.2f}'.format(tot_launchCost), '{:,.2f}'.format(tot_cost), tot_time], 
-                    ['Purely Monorail [4m Towers]', '{:,.2f}'.format(mono_cost1), '{:,.2f}'.format(mono_launchCost1), '{:,.2f}'.format(mono_cost1 + mono_launchCost1), np.ceil(mono1_launches + LTVtimeMono/720)], 
-                    ['Purely Monorail [6m Towers]', '{:,.2f}'.format(mono_cost2), '{:,.2f}'.format(mono_launchCost2), '{:,.2f}'.format(mono_cost2 + mono_launchCost2),np.ceil(mono2_launches + LTVtimeMono/720)], 
-                    ['Purely Tramway [10m Towers]', '{:,.2f}'.format(tram_cost), '{:,.2f}'.format(tram_launchCost), '{:,.2f}'.format(tram_cost + tram_launchCost), np.ceil(tram_launches + LTVtimeTram/720)]], 
-                   headers=['System', 'Mat Cost [$]', 'Launch Cost [$]', 'Total Cost [$]', 'Deployment Time [months]'], tablefmt='orgtbl'))
+    print(tabulate([['Mixture of Transportation', '{:,.0f}'.format(tot_mass), '{:,.2f}'.format(mat_cost), '{:,.2f}'.format(tot_launchCost), '{:,.2f}'.format(tot_cost), tot_time], 
+                    ['Purely Monorail [4m Towers]', '{:,.0f}'.format(pureSmallMass), '{:,.2f}'.format(mono_cost1), '{:,.2f}'.format(mono_launchCost1), '{:,.2f}'.format(mono_cost1 + mono_launchCost1), np.ceil(mono1_launches + LTVtimeMono/720)], 
+                    ['Purely Monorail [6m Towers]', '{:,.0f}'.format(pureMedMass), '{:,.2f}'.format(mono_cost2), '{:,.2f}'.format(mono_launchCost2), '{:,.2f}'.format(mono_cost2 + mono_launchCost2),np.ceil(mono2_launches + LTVtimeMono/720)], 
+                    ['Purely Tramway [10m Towers]', '{:,.0f}'.format(pureLargeMass), '{:,.2f}'.format(tram_cost), '{:,.2f}'.format(tram_launchCost), '{:,.2f}'.format(tram_cost + tram_launchCost), np.ceil(tram_launches + LTVtimeTram/720)]], 
+                   headers=['System', 'Mass [kg]', 'Mat Cost [$]', 'Launch Cost [$]', 'Total Cost [$]', 'Deployment Time [months]'], tablefmt='orgtbl'))
     print()
-    print(tot_tower)
-    print(tot_dist/25)
 
     return mat_cost, tot_time, tot_cost
 
