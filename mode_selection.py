@@ -63,7 +63,6 @@ def segmentation(pathfile):
     type = 'start'
     while step < len(path['latitude']) - 1:
         start = step
-        print(round(step/len(path['longitude'])*100,2),'% through gathering distances')
         if step + 3 < len(path['latitude']) - 1:
             while path['action'][step] == step_direction:
                 dist += havDist(np.deg2rad(path['latitude'][step]),np.deg2rad(path['latitude'][step + 1]),np.deg2rad(path['longitude'][step]),np.deg2rad(path['longitude'][step + 1]),1737400.0)
@@ -94,8 +93,6 @@ def segmentation(pathfile):
     segments.append(Segment(type=type, start_ind=start, end_ind=step, length=dist))
         
 
-    print(100,'% through gathering distances')
-
     data = {'type' : [],
             'start' : [],
             'end' : [],
@@ -113,17 +110,12 @@ def mode_optimization(data):
     df.to_csv('path_segments.csv',index=False)
     # this is genuinely aborrent but I don't know how to work with pandas and honestly I don't want to learn it
     newCSV = []
-    
-    fileRows = []    
     with open('path_segments.csv', mode='r') as file:
         fileReader = csv.reader(file, delimiter=',')
         next(fileReader, None) # get rid of header
+        fileRows = []
         for row in fileReader:
             fileRows.append(row)
-
-    fileRows.pop(1) # assassinate the one segment segment at beginning
-    fileRows[1][1] = 0
-    fileRows[-1][0] = "straight" # Alex Override
 
     # now re-read and merge together segments if possible using the Carl Optimization.
     for row in fileRows:
@@ -135,8 +127,6 @@ def mode_optimization(data):
     runningDistance = 0
     runningIndex = 0
     mergeMode = False # false means we're not merging.
-
-
     for row in fileRows[1:]: # run along path and attempt to merge together adjacent paths. this is semi-hardcoded and poorly designed
         lastType = lastRow[0]
         lastStartIndex = lastRow[1]
@@ -165,6 +155,7 @@ def mode_optimization(data):
         lastRow = row
     
     newCSV.pop(0) # how'd that get in there (also, rare pop() value)
+
     # for row in newCSV:
     #     print(row)
 
@@ -181,6 +172,5 @@ def mode_optimization(data):
     df = pd.DataFrame(data)
     df.to_csv('path_segments.csv',index=False)
 
-data = segmentation('A_star_Path.csv')
-mode_optimization(data)
-print("Done creating .csv")
+    return segments
+
