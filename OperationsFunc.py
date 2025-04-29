@@ -33,6 +33,9 @@ def operations(smallTower, medTower, largeTower, transTower, monoDist, tramDist,
     tramMass = tramRail_mass*tramDist + largeMass*largeTower
     transitionMass = transTower*largeMass*2 
     tot_mass = monoMass + tramMass + transitionMass
+    print(monoMass)
+    print(tramMass)
+    print(tot_mass)
 
     pureSmallMass = monoRail_mass*tot_dist + smallMass*tot_tower
     pureMedMass = monoRail_mass*tot_dist + medMass*tot_tower
